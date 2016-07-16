@@ -1,7 +1,7 @@
 <?php
 error_reporting(E_ERROR);
 
-$assets = is_dir(__DIR__ . "/themes") ? "./" : "https://cms.sourceway.de/";
+$assets = is_dir(__DIR__ . "/themes") ? "./" : (is_dir(__DIR__ . "/../CMS-Assets") ? "../CMS-Assets/" : "https://cms.sourceway.de/");
 
 if(!file_exists(__DIR__ . "/db.php")){
 	if(isset($_POST['host'])){

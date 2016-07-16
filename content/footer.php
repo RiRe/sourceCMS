@@ -10,8 +10,7 @@
 	    	</div>
 		</footer></div>
 
-		<script src="js/jquery.min.js"></script>
-		<script src="editor/ckeditor.js"></script>
-		<script src="editor/adapters/jquery.js"></script>
+		<script src="<?=$assets; ?>editor/ckeditor.js"></script>
+		<script src="<?=$assets; ?>editor/adapters/jquery.js"></script>
 	</body>
 </html>

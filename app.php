@@ -1,6 +1,8 @@
 <?php
 error_reporting(E_ERROR);
 
+$assets = is_dir(__DIR__ . "/themes") ? "./" : "https://cms.sourceway.de/";
+
 if(!file_exists(__DIR__ . "/db.php")){
 	if(isset($_POST['host'])){
 		$db = new MySQLi($_POST['host'], $_POST['user'], $_POST['password']);

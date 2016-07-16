@@ -1,14 +1,14 @@
 <?php
 if($rights > 0){
-include("error.php");
+  include("error.php");
 } else {
 ?>
 <div class="container" style="margin-top:25px">
-<div class="bs-docs-section">
-        <div class="row">
-          <div class="col-lg-12">
-            <div class="page-header">
-			<h1 id="type">Login</h1>
+  <div class="row">
+    <div class="col-lg-12">
+      <div class="page-header">
+        <h1>Login</h1>
+      </div>
 			<?php
 			if($error_login == 1){
 			?>
@@ -22,7 +22,7 @@ include("error.php");
                 <p>Ihr Konto wurde gesperrt. Bitte setzen Sie sich mit uns in Verbindung.</p>
               </div>
 			  <?php } ?>
-              <form method="POST" class="bs-example form-horizontal" action="?p=login">
+              <form method="POST" class="form-horizontal">
 				<fieldset>
                   <div class="form-group">
                     <label for="inputUser" class="col-lg-2 control-label">Benutzername</label>
@@ -44,7 +44,7 @@ include("error.php");
                   <div class="form-group">
                     <div class="col-lg-10 col-lg-offset-2">
                       <button type="submit" class="btn btn-primary">Einloggen</button> 
-                      <button type="reset" class="btn btn-default">Reset</button> 
+                      <button type="reset" class="btn btn-default">Zur&uuml;cksetzen</button> 
                     </div>
                   </div>
                 </fieldset>
@@ -52,5 +52,4 @@ include("error.php");
 			</div>
           </div>
         </div>
-		</div>
 		<?php } ?>

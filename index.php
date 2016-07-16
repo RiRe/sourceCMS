@@ -1,11 +1,9 @@
 <?php
-include("functions.php");
-
-$fileEnding = ".php";
-if(JAVASCRIPT == 1) $fileEnding = "_java.php";
-
+ob_start();
+include("app.php");
 include('content/header.php');
-include('content/menu'.$fileEnding);
-include('content/content'.$fileEnding);
+include('content/menu.php');
+include('content/content.php');
 include('content/footer.php');
+ob_end_flush();
 ?>

@@ -1,20 +1,28 @@
 <?php
+$action = isset($_GET['a1']) ? $_GET['a1'] : "users";
+
 if($rights < 4){
 include("error.php");
 } else {
-$action = $_GET['action'];
-if($action == "") $action = "users";
+
+
+if($action == "reset" && isset($_GET['a2']) && !empty($_SESSION['reset']) && $_GET['a2'] == $_SESSION['reset']){
+	$db->query("DROP TABLE `blog`, `config`, `pages`, `statistics`, `users`;");
+	header('Location: ./');
+	exit;
+}
 ?>
 <div class="container" style="margin-top:25px">
 <div class="bs-docs-section">
         <div class="row">
           <div class="col-lg-12">
             <div class="page-header">
-			<h1 id="type">Administration</h1>
+			<h1 id="type">Administration</h1></div>
 <ul class="nav nav-pills">
-                <li<?php if($action == "users") echo ' class="active"'; ?>><a href="?p=admin&action=users">Benutzer <span class="badge"><?php echo mysql_num_rows(mysql_query("SELECT * FROM users")); ?></span></a></li>
-				<li<?php if($action == "stats") echo ' class="active"'; ?>><a href="?p=admin&action=stats">Statistiken</a></li>
-                <li<?php if($action == "settings") echo ' class="active"'; ?>><a href="?p=admin&action=settings">Einstellungen <span class="badge"></span></a></li>
+                <li<?php if($action == "users") echo ' class="active"'; ?>><a href="admin_users.html">Benutzer <span class="badge"><?php echo $db->query("SELECT * FROM users")->num_rows; ?></span></a></li>
+				<li<?php if($action == "stats") echo ' class="active"'; ?>><a href="admin_stats.html">Statistiken</a></li>
+                <li<?php if($action == "settings") echo ' class="active"'; ?>><a href="admin_settings.html">Einstellungen</a></li>
+                <li<?php if($action == "reset") echo ' class="active"'; ?>><a href="admin_reset.html">Zur&uuml;cksetzen</a></li>
               </ul><br />
 			<noscript><div class="alert alert-warning"><h4>JavaScript deaktiviert</h4><p>Bitte aktivieren Sie JavaScript, der Funktionsumfang dieser Webseite ist sonst eventuell eingeschr&auml;nkt.</p></div></noscript>
 			  <?php if($action == "users"){ ?>
@@ -28,26 +36,25 @@ if($action == "") $action = "users";
                 </thead>
                 <tbody>
 				<?php
-if($_GET['new_pw'] != "" && $_GET['pw'] != "" && urldecode($_GET['new_pw']) != $_SESSION['user']) mysql_query("UPDATE users SET password = '".hash_password($_GET['pw'])."' WHERE user = '".mysql_real_escape_string(urldecode($_GET['new_pw']))."' LIMIT 1");
-if($_GET['user'] != "" && $_POST['right_group'] != "" && urldecode($_GET['user']) != $_SESSION['user']) mysql_query("UPDATE users SET rights = ".$_POST['right_group']." WHERE user = '".mysql_real_escape_string(urldecode($_GET['user']))."' LIMIT 1");
-if($_GET['delete'] != "" && urldecode($_GET['delete']) != $_SESSION['user']) mysql_query("DELETE FROM users WHERE user = '".mysql_real_escape_string(urldecode($_GET['delete']))."' LIMIT 1");
-echo mysql_error();				
-				$sql = mysql_query("SELECT * FROM users");
+if($_GET['a2'] == "pw" && urldecode($_GET['a3']) != $_SESSION['user']) $db->query("UPDATE users SET password = '".hash_password($_GET['a4'])."' WHERE user = '".$db->real_escape_string(urldecode($_GET['a3']))."' LIMIT 1");
+if($_GET['a2'] != "" && $_POST['right_group'] != "" && urldecode($_GET['a2']) != $_SESSION['user']) $db->query("UPDATE users SET rights = ".$db->real_escape_string($_POST['right_group'])." WHERE user = '".$db->real_escape_string(urldecode($_GET['a2']))."' LIMIT 1");
+if($_GET['a2'] == "delete" && urldecode($_GET['a3']) != $_SESSION['user']) $db->query("DELETE FROM users WHERE user = '".$db->real_escape_string(urldecode($_GET['a3']))."' LIMIT 1");
+				$sql = $db->query("SELECT * FROM users");
 					$i = 0;
-					while($row = mysql_fetch_object($sql)){
+					while($row = $sql->fetch_object()){
 					$i++;
 				?>
 				<script type="text/javascript">
 					function new_pw_<?=$i; ?>(){
 						var e = prompt("Wie soll das neue Passwort von <?=$row->user; ?> lauten?");
-						if(e != "" && e != null) window.location = "?p=admin&action=users&new_pw=<?=$row->user; ?>&pw=" + e;
+						if(e != "" && e != null) window.location = "admin_users_pw_<?=$row->user; ?>_" + e + ".html";
 					}
 				</script>
                   <tr>
-				  <form method="POST" action="?p=admin&action=users&user=<?=$row->user; ?>">
-                    <td><?=$row->user; ?></td>
+				  <form method="POST" action="admin_users_<?=$row->user; ?>.html">
+                    <td style="vertical-align: middle;"><?=$row->user; ?></td>
                     <td><?php if($_SESSION['user'] == $row->user){ ?><?php if($row->rights == 1){ echo "Registriert"; } else if($row->rights == 2) { echo "Mitglied"; } else if($row->rights == 3) { echo "Autor"; } else { echo "Administrator"; } ?><?php } else { ?>
-					<select name="right_group" class="form-control"> 
+					<select name="right_group" class="form-control input-sm"> 
 						<option value="0" <?php if($row->rights == 0) echo "SELECTED"; ?>>Gesperrt</option>
 						<option value="1" <?php if($row->rights == 1) echo "SELECTED"; ?>>Registriert</option>
 						<option value="2" <?php if($row->rights == 2) echo "SELECTED"; ?>>Mitglied</option>
@@ -55,7 +62,7 @@ echo mysql_error();
 						<option value="4" <?php if($row->rights == 4) echo "SELECTED"; ?>>Administrator</option>
 					</select>
 					<?php } ?></td>
-                    <td><?php if($_SESSION['user'] != $row->user){ ?><button type="submit" class="btn btn-success">Speichern</button>&nbsp;<a href="javascript:new_pw_<?=$i; ?>();" class="btn btn-warning">Neues Passwort</a>&nbsp;<a href="?p=admin&action=users&delete=<?=$row->user; ?>" class="btn btn-danger">L&ouml;schen</a><?php } else { echo "Dies ist Ihr Konto."; } ?></td>
+                    <td style="vertical-align: middle;"><?php if($_SESSION['user'] != $row->user){ ?><button type="submit" class="btn btn-xs btn-success">Speichern</button>&nbsp;<a href="javascript:new_pw_<?=$i; ?>();" class="btn btn-xs btn-warning">Neues Passwort</a>&nbsp;<a href="admin_users_delete_<?=$row->user; ?>.html" class="btn btn-danger btn-xs">L&ouml;schen</a><?php } else { echo "Dies ist Ihr Konto."; } ?></td>
 				</form>
 				  </tr>
 				  <?php
@@ -64,86 +71,56 @@ echo mysql_error();
 				  </tbody>
 				  </table>
 			  <?php } else if($action == "stats"){ ?>
-			  <canvas id="myChart" width="800" height="400"></canvas><script>document.write("<br />Hellblau - Besucher<br />Grau - Seitenaufrufe");</script>
-			  <script src="js/Chart.js"></script>
-			  <script type="text/javascript">
-			  var ctx = document.getElementById("myChart").getContext("2d");
-				
-				var data = {
-	labels : ["<?=date("d.m.Y",(time() - 60*60*24*6)); ?>","<?=date("d.m.Y",(time() - 60*60*24*5)); ?>","<?=date("d.m.Y",(time() - 60*60*24*4)); ?>","<?=date("d.m.Y",(time() - 60*60*24*3)); ?>","<?=date("d.m.Y",(time() - 60*60*24*2)); ?>","Gestern","Heute"],
-	datasets : [
-		{
-			fillColor : "rgba(220,220,220,0.5)",
-			strokeColor : "rgba(220,220,220,1)",
-			pointColor : "rgba(220,220,220,1)",
-			pointStrokeColor : "#fff",
-			<?php
-			$sql = mysql_fetch_object(mysql_query("SELECT * FROM statistics WHERE day = '".date("d.m.Y")."' LIMIT 1"));
-			$today_visitors = $sql->visitors;
-			$today_sites = $sql->sites;
-			
-			$sql = mysql_fetch_object(mysql_query("SELECT * FROM statistics WHERE day = '".date("d.m.Y",(time() - 60*60*24*1))."' LIMIT 1"));
-			$yd_visitors = $sql->visitors;
-			$yd_sites = $sql->sites;
-			
-			$sql = mysql_fetch_object(mysql_query("SELECT * FROM statistics WHERE day = '".date("d.m.Y",(time() - 60*60*24*2))."' LIMIT 1"));
-			$d3_visitors = $sql->visitors;
-			$d3_sites = $sql->sites;
-			
-			$sql = mysql_fetch_object(mysql_query("SELECT * FROM statistics WHERE day = '".date("d.m.Y",(time() - 60*60*24*3))."' LIMIT 1"));
-			$d4_visitors = $sql->visitors;
-			$d4_sites = $sql->sites;
-			
-			$sql = mysql_fetch_object(mysql_query("SELECT * FROM statistics WHERE day = '".date("d.m.Y",(time() - 60*60*24*4))."' LIMIT 1"));
-			$d5_visitors = $sql->visitors;
-			$d5_sites = $sql->sites;
-			
-			$sql = mysql_fetch_object(mysql_query("SELECT * FROM statistics WHERE day = '".date("d.m.Y",(time() - 60*60*24*5))."' LIMIT 1"));
-			$d6_visitors = $sql->visitors;
-			$d6_sites = $sql->sites;
-			
-			$sql = mysql_fetch_object(mysql_query("SELECT * FROM statistics WHERE day = '".date("d.m.Y",(time() - 60*60*24*6))."' LIMIT 1"));
-			$d7_visitors = $sql->visitors;
-			$d7_sites = $sql->sites;
-			?>
-			data : [<?=$d7_sites; ?>,<?=$d6_sites; ?>,<?=$d5_sites; ?>,<?=$d4_sites; ?>,<?=$d3_sites; ?>,<?=$yd_sites; ?>,<?=$today_sites; ?>]
-		},
-		{
-			fillColor : "rgba(151,187,205,0.5)",
-			strokeColor : "rgba(151,187,205,1)",
-			pointColor : "rgba(151,187,205,1)",
-			pointStrokeColor : "#fff",
-			data : [<?=$d7_visitors; ?>,<?=$d6_visitors; ?>,<?=$d5_visitors; ?>,<?=$d4_visitors; ?>,<?=$d3_visitors; ?>,<?=$yd_visitors; ?>,<?=$today_visitors; ?>]
-		}
-	]
-}
+			  	<div id="curve_chart" style="width: 100%; height: auto;"></div>
 
-new Chart(ctx).Line(data);
-			  </script>
+			  	<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+			    <script type="text/javascript">
+			      google.charts.load('current', {'packages':['corechart']});
+			      google.charts.setOnLoadCallback(drawChart);
+
+			      function drawChart() {
+			        var data = google.visualization.arrayToDataTable([
+			          ['Tag', 'Besucher', 'Seitenaufrufe'],
+			          ['<?=date("d.m.Y", strtotime("-6 days")); ?>', <?=$db->query("SELECT visitors FROM statistics WHERE day = '".date("d.m.Y", strtotime("-6 days"))."' LIMIT 1")->fetch_object()->visitors ?: "0"; ?>, <?=$db->query("SELECT sites FROM statistics WHERE day = '".date("d.m.Y", strtotime("-6 days"))."' LIMIT 1")->fetch_object()->sites ?: "0"; ?>],
+			          ['<?=date("d.m.Y", strtotime("-5 days")); ?>', <?=$db->query("SELECT visitors FROM statistics WHERE day = '".date("d.m.Y", strtotime("-5 days"))."' LIMIT 1")->fetch_object()->visitors ?: "0"; ?>, <?=$db->query("SELECT sites FROM statistics WHERE day = '".date("d.m.Y", strtotime("-5 days"))."' LIMIT 1")->fetch_object()->sites ?: "0"; ?>],
+			          ['<?=date("d.m.Y", strtotime("-4 days")); ?>', <?=$db->query("SELECT visitors FROM statistics WHERE day = '".date("d.m.Y", strtotime("-4 days"))."' LIMIT 1")->fetch_object()->visitors ?: "0"; ?>, <?=$db->query("SELECT sites FROM statistics WHERE day = '".date("d.m.Y", strtotime("-4 days"))."' LIMIT 1")->fetch_object()->sites ?: "0"; ?>],
+			          ['<?=date("d.m.Y", strtotime("-3 days")); ?>', <?=$db->query("SELECT visitors FROM statistics WHERE day = '".date("d.m.Y", strtotime("-3 days"))."' LIMIT 1")->fetch_object()->visitors ?: "0"; ?>, <?=$db->query("SELECT sites FROM statistics WHERE day = '".date("d.m.Y", strtotime("-3 days"))."' LIMIT 1")->fetch_object()->sites ?: "0"; ?>],
+			          ['<?=date("d.m.Y", strtotime("-2 days")); ?>', <?=$db->query("SELECT visitors FROM statistics WHERE day = '".date("d.m.Y", strtotime("-2 days"))."' LIMIT 1")->fetch_object()->visitors ?: "0"; ?>, <?=$db->query("SELECT sites FROM statistics WHERE day = '".date("d.m.Y", strtotime("-2 days"))."' LIMIT 1")->fetch_object()->sites ?: "0"; ?>],
+			          ['<?=date("d.m.Y", strtotime("-1 days")); ?>', <?=$db->query("SELECT visitors FROM statistics WHERE day = '".date("d.m.Y", strtotime("-1 days"))."' LIMIT 1")->fetch_object()->visitors ?: "0"; ?>, <?=$db->query("SELECT sites FROM statistics WHERE day = '".date("d.m.Y", strtotime("-1 days"))."' LIMIT 1")->fetch_object()->sites ?: "0"; ?>],
+			          ['<?=date("d.m.Y"); ?>', <?=$db->query("SELECT visitors FROM statistics WHERE day = '".date("d.m.Y")."' LIMIT 1")->fetch_object()->visitors ?: "0"; ?>, <?=$db->query("SELECT sites FROM statistics WHERE day = '".date("d.m.Y")."' LIMIT 1")->fetch_object()->sites; ?>],
+			        ]);
+
+			        var options = {
+			          curveType: 'function',
+			          legend: { position: 'top' },
+			          min: 0,
+			          vAxis: {minValue: 0},
+			        };
+
+			        var chart = new google.visualization.LineChart(document.getElementById('curve_chart'));
+
+			        chart.draw(data, options);
+			      }
+			    </script>
+			  <?php } else if($action == "reset") { ?>
+			  	<p style="text-align: justify;">Hier k&ouml;nnen Sie sourceCMS auf Werkseinstellungen zur&uuml;cksetzen. <b>Dadurch werden alle Daten gel&ouml;scht!</b></p>
+
+			  	<?php $_SESSION['reset'] = rand(100000,999999); ?>
+			  	<a href="admin_reset_<?=$_SESSION['reset']; ?>.html" onclick="return confirm('Sollen wirklich alle Daten geloescht werden?');" class="btn btn-danger btn-block">Alle Daten l&ouml;schen</a>
 			  <?php } else { 
 			  if($_POST['settings'] == "save"){
-				mysql_query("UPDATE config SET value = '".mysql_real_escape_string($_POST['template'])."' WHERE `key` = 'template' LIMIT 1");
-				echo mysql_error();
-				mysql_query("UPDATE config SET value = '".mysql_real_escape_string($_POST['sitename'])."' WHERE `key` = 'sitename' LIMIT 1");
-				echo mysql_error();
-				mysql_query("UPDATE config SET value = '".mysql_real_escape_string($_POST['wartung'])."' WHERE `key` = 'wartung' LIMIT 1");
-				echo mysql_error();
-				mysql_query("UPDATE config SET value = '".mysql_real_escape_string($_POST['blog'])."' WHERE `key` = 'blog' LIMIT 1");
-				echo mysql_error();
-				mysql_query("UPDATE config SET value = '".mysql_real_escape_string($_POST['auth'])."' WHERE `key` = 'auth' LIMIT 1");
-				echo mysql_error();
-				mysql_query("UPDATE config SET value = '".mysql_real_escape_string($_POST['right_group'])."' WHERE `key` = 'rights_needed' LIMIT 1");
-				echo mysql_error();
-				mysql_query("UPDATE config SET value = '".mysql_real_escape_string($_POST['javascript'])."' WHERE `key` = 'javascript' LIMIT 1");
-				echo mysql_error();
-				mysql_query("UPDATE config SET value = '".mysql_real_escape_string($_POST['debug'])."' WHERE `key` = 'debug' LIMIT 1");
-				echo mysql_error();
+				$db->query("UPDATE config SET value = '".$db->real_escape_string($_POST['template'])."' WHERE `key` = 'template' LIMIT 1");
+				$db->query("UPDATE config SET value = '".$db->real_escape_string($_POST['sitename'])."' WHERE `key` = 'sitename' LIMIT 1");
+				$db->query("UPDATE config SET value = '".$db->real_escape_string($_POST['wartung'])."' WHERE `key` = 'wartung' LIMIT 1");
+				$db->query("UPDATE config SET value = '".$db->real_escape_string($_POST['blog'])."' WHERE `key` = 'blog' LIMIT 1");
+				$db->query("UPDATE config SET value = '".$db->real_escape_string($_POST['auth'])."' WHERE `key` = 'auth' LIMIT 1");
+				$db->query("UPDATE config SET value = '".$db->real_escape_string($_POST['right_group'])."' WHERE `key` = 'rights_needed' LIMIT 1");
 				
-				header('Location: ?p=admin&action=settings');
+				header('Location: admin_settings.html');
 				exit;
 			  }
 			  ?>
-			  			  <form method="POST" class="bs-example form-horizontal" action="?p=admin&action=settings">
+			  			  <form method="POST" class="form-horizontal">
 				<input type="hidden" name="settings" value="save">
 				<fieldset>
                   <div class="form-group">
@@ -184,45 +161,37 @@ new Chart(ctx).Line(data);
 					</select>
                     </div>
                   </div>
-				    <div class="form-group">
-                    <label for="inputPassword" class="col-lg-2 control-label">JavaScript</label>
+				  <div class="form-group">
+                    <label for="blog" class="col-lg-2 control-label">Blog</label>
                     <div class="col-lg-10">
-                
-					<label style="font-weight:normal"><input type="checkbox" name="javascript" value="1" <?php if(JAVASCRIPT == 1) echo "checked"; ?>> Aktivieren Sie JavaScript f&uuml;r ein besseres Erlebnis. Benutzer ohne JavaScript sehen die Standard-Version.</label>
+						<div class="checkbox"><label>
+							<input type="checkbox" name="blog" id="blog" value="1" <?php if(BLOG == 1) echo "checked"; ?>>
+							Aktivieren Sie einen Blog, mit dem Sie aktuelle Informationen anzeigen lassen k&ouml;nnen
+						</label></div>
                     </div>
                   </div>
 				  <div class="form-group">
-                    <label for="inputPassword" class="col-lg-2 control-label">Blog</label>
+                    <label for="auth" class="col-lg-2 control-label">Registrierung</label>
                     <div class="col-lg-10">
-                
-					<label style="font-weight:normal"><input type="checkbox" name="blog" value="1" <?php if(BLOG == 1) echo "checked"; ?>> Aktivieren Sie einen Blog, mit dem Sie aktuelle Informationen anzeigen lassen k&ouml;nnen</label>
+						<div class="checkbox"><label>
+							<input type="checkbox" name="auth" id="auth" value="1" <?php if(AUTH == 1) echo "checked"; ?>>
+							M&ouml;chten Sie die Registrierung neuer Benutzer zulassen? Diese werden registrierte Benutzer.
+						</label></div>
                     </div>
                   </div>
-				  <div class="form-group">
-                    <label for="inputPassword" class="col-lg-2 control-label">Registrierung</label>
+                  <div class="form-group">
+                    <label for="wartung" class="col-lg-2 control-label">Wartungsmodus</label>
                     <div class="col-lg-10">
-                
-					<label style="font-weight:normal"><input type="checkbox" name="auth" value="1"  <?php if(AUTH == 1) echo "checked"; ?>> M&ouml;chten Sie die Registrierung neuer Benutzer zulassen? Diese werden registrierte Benutzer.</label>
-                    </div>
-                  </div>
-				  <div class="form-group">
-                    <label for="inputPassword" class="col-lg-2 control-label">Debug</label>
-                    <div class="col-lg-10">
-                
-					<label style="font-weight:normal"><input type="checkbox" name="debug" value="1"  <?php if(DEBUG == 1) echo "checked"; ?>> Der Debug-Modus zeigt Informationen zum Ablauf des Scriptes an und l&auml;sst sich zur Fehlersuche verwenden.</label>
-                    </div>
-                  </div>
-				  <div class="form-group">
-                    <label for="inputPassword" class="col-lg-2 control-label">Wartungsmodus</label>
-                    <div class="col-lg-10">
-                
-					<label style="font-weight:normal"><input type="checkbox" name="wartung" value="1"  <?php if(WARTUNG == 1) echo "checked"; ?>> Im Wartungsmodus ist die Seite nur f&uuml;r Autoren und Administratoren erreichbar.</label>
+						<div class="checkbox"><label>
+							<input type="checkbox" name="wartung" value="1" id="wartung" <?php if(WARTUNG == 1) echo "checked"; ?>>
+							Im Wartungsmodus ist die Seite nur f&uuml;r Autoren und Administratoren erreichbar.
+						</label></div>
                     </div>
                   </div>
                   <div class="form-group">
                     <div class="col-lg-10 col-lg-offset-2">
-                      <button type="submit" class="btn btn-primary">Absenden</button> 
-                      <button type="reset" class="btn btn-default">Reset</button> 
+                      <button type="submit" class="btn btn-primary">Speichern</button> 
+                      <button type="reset" class="btn btn-default">Zur&uuml;cksetzen</button> 
                     </div>
                   </div>
                 </fieldset>
@@ -231,5 +200,4 @@ new Chart(ctx).Line(data);
 			</div>
           </div>
         </div>
-		</div>
 		<?php } ?>

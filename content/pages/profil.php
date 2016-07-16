@@ -4,11 +4,10 @@ include("error.php");
 } else {
 ?>
 <div class="container" style="margin-top:25px">
-<div class="bs-docs-section">
         <div class="row">
           <div class="col-lg-12">
             <div class="page-header">
-			<h1 id="type">Profil</h1>
+			<h1>Profil</h1></div>
 			<?php
 			if($error_profil == true){
 			?>
@@ -23,7 +22,7 @@ include("error.php");
                 <p>Ihre &Auml;nderungen wurden erfolgreich &uuml;bernommen.</p>
               </div>
 			  <?php } ?>
-			  <form method="POST" class="bs-example form-horizontal" action="?p=profil">
+			  <form method="POST" class="bs-example form-horizontal">
 				<fieldset>
                   <div class="form-group">
                     <label for="inputUser" class="col-lg-2 control-label">Benutzername</label>
@@ -48,13 +47,12 @@ include("error.php");
                   <div class="form-group">
                     <div class="col-lg-10 col-lg-offset-2">
                       <button type="submit" class="btn btn-primary">&Auml;ndern</button> 
-                      <button type="reset" class="btn btn-default">Reset</button> 
+                      <button type="reset" class="btn btn-default">Zur&uuml;cksetzen</button> 
                     </div>
                   </div>
                 </fieldset>
 			  </form>
 			</div>
-          </div>
         </div>
 		</div>
 		<?php } ?>

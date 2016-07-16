@@ -6,24 +6,24 @@ include("wartung.php");
 } else if ($rights < RIGHTS_NEEDED) {
 include("forbidden.php");
 } else {
-if($rights >= 3 && $_GET['action'] == "delete") mysql_query("DELETE FROM blog WHERE title = '".mysql_real_escape_string(urldecode($_GET['entry']))."' AND rights <= ".$rights." LIMIT 1");
+if($rights >= 3 && $_GET['a1'] == "delete") $db->query("DELETE FROM blog WHERE title = '".$db->real_escape_string(urldecode($_GET['a2']))."' AND rights <= ".$rights." LIMIT 1");
 
-if($rights >= 3 && $_GET['edit'] == "do"){
+if($rights >= 3 && $_POST['action'] == "edit"){
 if($_POST['title'] != "" && $_POST['content'] != "" && is_numeric($_POST['rights'])){
-mysql_query("UPDATE blog SET title = '".mysql_real_escape_string($_POST['title'])."', content = '".mysql_real_escape_string($_POST['content'])."', rights = '".mysql_real_escape_string($_POST['rights'])."' WHERE title = '".mysql_real_escape_string(urldecode($_GET['entry']))."' LIMIT 1");
+$db->query("UPDATE blog SET title = '".$db->real_escape_string($_POST['title'])."', content = '".$db->real_escape_string($_POST['content'])."', rights = '".$db->real_escape_string($_POST['rights'])."' WHERE title = '".$db->real_escape_string(urldecode($_GET['a2']))."' LIMIT 1");
+header('Location: blog.html');
+exit;
 } else {
 $display = 0;
 ?>
 <div class="container" style="margin-top:25px">
-<div class="bs-docs-section">
         <div class="row">
           <div class="col-lg-12">
             <div class="page-header">
-			<h1 id="type">Fehler</h1>
+			<h1>Fehler</h1></div>
 			<?php
 echo "Bitte f&uuml;llen Sie alle Felder aus und gehen Sie nun <a href=\"javascript:history.back()\">zur&uuml;ck</a>.";
 ?>
-		</div>
           </div>
         </div>
 		</div>
@@ -32,19 +32,18 @@ echo "Bitte f&uuml;llen Sie alle Felder aus und gehen Sie nun <a href=\"javascri
 }
 
 
-if($rights >= 3 && $_GET['action'] == "edit" && $_GET['entry'] != ""){
-$sql = mysql_query("SELECT * FROM blog WHERE title = '".mysql_real_escape_string(urldecode($_GET['entry']))."' AND rights <= ".$rights);
-if(mysql_num_rows($sql) == 1){
+if($rights >= 3 && $_GET['a1'] == "edit" && $_GET['a2'] != ""){
+$sql = $db->query("SELECT * FROM blog WHERE title = '".$db->real_escape_string(urldecode($_GET['a2']))."' AND rights <= ".$rights);
+if($sql->num_rows == 1){
 $display = 0;
-$entry = mysql_fetch_object($sql);
+$entry = $sql->fetch_object();
 ?>
 <div class="container" style="margin-top:25px">
-<div class="bs-docs-section">
         <div class="row">
           <div class="col-lg-12">
             <div class="page-header">
-			<h1 id="type">Beitrag bearbeiten</h1>
-<form class="form-horizontal" method="POST" action="?p=blog&entry=<?=$_GET['entry']; ?>&edit=do">
+			<h1>Beitrag bearbeiten</h1></div>
+<form class="form-horizontal" method="POST">
 				<fieldset>
 				<input type="text" name="title" placeholder="Titel" value="<?=$entry->title; ?>" class="form-control"><br />
 				<textarea class="ckeditor" name="content"><?=$entry->content; ?></textarea><br />
@@ -55,30 +54,31 @@ $entry = mysql_fetch_object($sql);
 				<option value="3" <?php if($entry->rights == 3) echo "SELECTED"; ?>>Zugriff nur f&uuml;r Autoren + alle &uuml;bergeordneten Gruppen</option>
 				<option value="4" <?php if($entry->rights == 4) echo "SELECTED"; ?>>Zugriff nur f&uuml;r Administratoren</option>
 				</select><br />
+				<input type="hidden" name="action" value="edit">
 				<button type="submit" class="btn btn-success">Speichern</button>
 				</fieldset>
-				</form></div></div></div></div></div>
+				</form></div></div></div></div>
 
 <?php
 }
 }
 
-if($rights >= 3 && $_GET['add'] == "do"){
+if($rights >= 3 && $_POST['action'] == "add"){
 if($_POST['title'] != "" && $_POST['content'] != "" && is_numeric($_POST['rights'])){
-mysql_query("INSERT INTO blog (`title`,`content`,`rights`,`date`) VALUES ('".mysql_real_escape_string($_POST['title'])."','".mysql_real_escape_string($_POST['content'])."','".mysql_real_escape_string($_POST['rights'])."',".time().")");
+$db->query("INSERT INTO blog (`title`,`content`,`rights`,`date`) VALUES ('".$db->real_escape_string($_POST['title'])."','".$db->real_escape_string($_POST['content'])."','".$db->real_escape_string($_POST['rights'])."',".time().")");
+header('Location: blog.html');
+exit;
 } else {
 $display = 0;
 ?>
 <div class="container" style="margin-top:25px">
-<div class="bs-docs-section">
         <div class="row">
           <div class="col-lg-12">
             <div class="page-header">
-			<h1 id="type">Fehler</h1>
+			<h1>Fehler</h1></div>
 			<?php
 echo "Bitte f&uuml;llen Sie alle Felder aus und gehen Sie nun <a href=\"javascript:history.back()\">zur&uuml;ck</a>.";
 ?>
-		</div>
           </div>
         </div>
 		</div>
@@ -86,14 +86,13 @@ echo "Bitte f&uuml;llen Sie alle Felder aus und gehen Sie nun <a href=\"javascri
 }
 }
 
-if($_GET['action'] == "add" && $rights >= 3){
+if($_GET['a1'] == "add" && $rights >= 3){
 ?><div class="container" style="margin-top:25px">
-<div class="bs-docs-section">
         <div class="row">
           <div class="col-lg-12">
             <div class="page-header">
-			<h1 id="type">Blog-Beitrag hinzuf&uuml;gen</h1>
-<form class="form-horizontal" method="POST" action="?p=<?=$_GET['p']; ?>&add=do">
+			<h1>Blog-Beitrag hinzuf&uuml;gen</h1></div>
+<form class="form-horizontal" method="POST">
 				<fieldset>
 				<input type="text" name="title" placeholder="Titel" class="form-control"><br />
 				<textarea class="ckeditor" name="content"></textarea><br />
@@ -104,48 +103,46 @@ if($_GET['action'] == "add" && $rights >= 3){
 				<option value="3">Zugriff nur f&uuml;r Autoren + alle &uuml;bergeordneten Gruppen</option>
 				<option value="4">Zugriff nur f&uuml;r Administratoren</option>
 				</select><br />
+				<input type="hidden" name="action" value="add">
 				<button type="submit" class="btn btn-success">Beitrag erstellen</button>
 				</fieldset>
-				</form></div></div></div></div>
+				</form></div></div></div>
 <?php
 } else {
 
-$sql = mysql_query("SELECT * FROM blog WHERE rights <= ".$rights." ORDER BY date DESC");
-if(mysql_num_rows($sql) == 0 && $display == 1){
+$sql = $db->query("SELECT * FROM blog WHERE rights <= ".$rights." ORDER BY date DESC");
+if($sql->num_rows == 0 && $display == 1){
 	?>
 	<div class="container" style="margin-top:25px">
-<div class="bs-docs-section">
         <div class="row">
           <div class="col-lg-12">
             <div class="page-header">
-              <h1 id="type">Blog</h1>
+              <h1>Blog</h1></div>
 				Derzeit sind keine Blog-Eintr&auml;ge vorhanden.<?php if($rights >= 3){ ?><br /><br />
-			  <a href="?p=blog&action=add" class="btn btn-success">Beitrag hinzuf&uuml;gen</a><?php } ?>
+			  <a href="./blog_add.html" class="btn btn-success">Beitrag hinzuf&uuml;gen</a><?php } ?>
 			</div>
-          </div>
         </div>
 		</div>
 	<?php
 } else if($display == 1) {
 ?>
 <div class="container" style="margin-top:25px">
-<div class="bs-docs-section">
         <div class="row">
           <div class="col-lg-12">
             <div class="page-header">
-			 <?php if($rights >= 3){ ?> <a href="?p=blog&action=add" class="btn btn-success">Beitrag hinzuf&uuml;gen</a><?php } ?>
+            <h1>Blog <?php if($rights >= 3){ ?> <a href="./blog_add.html" class="btn btn-success btn-xs">Beitrag hinzuf&uuml;gen</a><?php } ?></h1>
+			 </div>
 			<?php
-			$rows = mysql_num_rows($sql);
+			$rows = $sql->num_rows;
 			$i = 1;
-			while($row = mysql_fetch_object($sql)) {
+			while($row = $sql->fetch_object()) {
 			?>
-              <h1 id="type"><?=$row->title; ?> <small><?=date("d.m.Y",$row->date); ?><?php if($rights >= 3){ ?> :: <a href="?p=blog&action=edit&entry=<?=$row->title; ?>">bearbeiten</a> :: <a href="?p=blog&action=delete&entry=<?=$row->title; ?>">l&ouml;schen</a><?php } ?></small></h1>
+              <h1><?=$row->title; ?> <small><?=date("d.m.Y",$row->date); ?><?php if($rights >= 3){ ?> :: <a href="./blog_edit_<?=$row->title; ?>.html">bearbeiten</a> :: <a href="blog_delete_<?=$row->title; ?>.html">l&ouml;schen</a><?php } ?></small></h1>
 				<?=$row->content; ?><?php if($rows != $i) echo "<hr />"; ?>
 				<?php 
 				$i++;
 				} ?>
 			</div>
-          </div>
         </div>
 		</div>
 		<?php } } } ?>

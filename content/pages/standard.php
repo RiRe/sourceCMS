@@ -45,7 +45,7 @@ if($display == 1){
         <div class="row">
           <div class="col-lg-12">
             <div class="page-header">
-              <h1><? echo $_GET['a1'] == "edit" && $rights >= 3 ? "Seite bearbeiten" : $page->title; ?> <?php if($rights >= 3 && $_GET['a1'] != "edit"){ ?><small><a href="./<?=$_GET['p']; ?>_edit.html">bearbeiten</a><?php if($page->slug != "startseite"){ ?> :: <a href="./<?=$_GET['p']; ?>_delete.html">l&ouml;schen</a> :: <a href="./<?=$_GET['p']; ?>_m.html">nach vorne</a> :: <a href="./<?=$_GET['p']; ?>_p.html">nach hinten</a><?php } ?></small><?php } ?></h1></div>
+              <h1><?php echo $_GET['a1'] == "edit" && $rights >= 3 ? "Seite bearbeiten" : $page->title; ?> <?php if($rights >= 3 && $_GET['a1'] != "edit"){ ?><small><a href="./<?=$_GET['p']; ?>_edit.html">bearbeiten</a><?php if($page->slug != "startseite"){ ?> :: <a href="./<?=$_GET['p']; ?>_delete.html">l&ouml;schen</a> :: <a href="./<?=$_GET['p']; ?>_m.html">nach vorne</a> :: <a href="./<?=$_GET['p']; ?>_p.html">nach hinten</a><?php } ?></small><?php } ?></h1></div>
 				<?php if($_GET['a1'] == "edit" && $rights >= 3){ ?>
 				<form class="form-horizontal" method="POST" action="./<?=$_GET['p']; ?>.html">
 				<fieldset>
